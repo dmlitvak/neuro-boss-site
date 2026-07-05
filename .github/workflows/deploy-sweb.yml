@@ -61,7 +61,7 @@ jobs:
           mirror -R --delete --verbose dist $SWEB_REMOTE_PATH
           bye
           SCRIPT
-          lftp -u "$SWEB_USER,$SWEB_PASSWORD" -p 22 "sftp://$SWEB_HOST" -f /tmp/lftp-deploy.txt
+          lftp -u "$SWEB_USER,$SWEB_PASSWORD" -p 22 -f /tmp/lftp-deploy.txt "sftp://$SWEB_HOST"
         env:
           SWEB_HOST: ${{ secrets.SWEB_HOST }}
           SWEB_USER: ${{ secrets.SWEB_USER }}
