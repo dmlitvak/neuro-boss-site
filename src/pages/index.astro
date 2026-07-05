@@ -1,8 +1,14 @@
 ---
 // import.meta.env.BASE_URL учитывает base из astro.config.mjs (разный для
-// GitHub Pages и для VPS/своего домена) — все ссылки на статику в public/
-// должны собираться через него, а не как абсолютные пути от корня.
+// GitHub Pages, sweb.ru и VPS/своего домена) — все ссылки на статику в
+// public/ должны собираться через него, а не как жёстко прописанный путь.
 const base = import.meta.env.BASE_URL;
+
+import { Image } from "astro:assets";
+import authorPhoto from "../assets/dmitry.jpg";
+
+const description =
+  "«Нейро-босс» — требовательный ИИ-руководитель для предпринимателя, который сам себе хозяин, но не умеет себе подчиняться.";
 ---
 
 <html lang="ru">
@@ -10,13 +16,246 @@ const base = import.meta.env.BASE_URL;
 		<meta charset="utf-8" />
 		<link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
 		<link rel="icon" href={`${base}favicon.ico`} />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="description" content={description} />
 		<meta name="generator" content={Astro.generator} />
-		<title>Нейро-босс</title>
+		<meta property="og:title" content="Нейро-босс" />
+		<meta property="og:description" content={description} />
+		<title>Нейро-босс — когда достали AI-ассистенты</title>
 	</head>
 	<body>
-		<h1>Нейро-босс</h1>
-		<p>Сайт в разработке — содержание ещё не определено (см. бриф в корне проекта).</p>
+		<main>
+			<section class="hero">
+				<h1>Нейро-босс</h1>
+				<p class="tagline">когда достали AI-ассистенты</p>
+			</section>
+
+			<section class="problem">
+				<h2>Какая проблема у предпринимателя?</h2>
+				<p>
+					У него нет босса. Он сам себе хозяин. Однако самим собой классно
+					командовать, но вот подчиняться себе мало у кого получается.
+				</p>
+			</section>
+
+			<section class="positioning">
+				<p>«Нейро-босс» — не помощник и не контент-завод.</p>
+				<p>
+					«Нейро-босс» — это ваш требовательный руководитель. Мудрый и
+					внимательный, но порой безжалостный.
+				</p>
+			</section>
+
+			<section class="author">
+				<Image
+					src={authorPhoto}
+					alt="Дмитрий Литвак"
+					width={480}
+					height={480}
+					fit="cover"
+					loading="eager"
+					class="author-photo"
+				/>
+				<div class="author-info">
+					<p class="author-name">Дмитрий Литвак</p>
+					<p class="author-title">бизнес-технолог</p>
+					<blockquote>
+						«Нейро-босс» системно направляет меня каждый день. Он всё помнит,
+						с ним бесполезно торговаться.
+					</blockquote>
+				</div>
+			</section>
+
+			<section class="contacts">
+				<h2>Контакты</h2>
+				<ul>
+					<li><span>Сайт</span> Neuro-Boss.ru</li>
+					<li>
+						<span>ТГ-канал</span>
+						<a href="https://t.me/BTLitvak" target="_blank" rel="noopener">t.me/BTLitvak</a>
+					</li>
+					<li>
+						<span>Личный ТГ</span>
+						<a href="https://t.me/Dm_Litvak" target="_blank" rel="noopener">t.me/Dm_Litvak</a>
+					</li>
+					<li>
+						<span>Email</span>
+						<a href="mailto:dLitvak@yandex.ru">dLitvak@yandex.ru</a>
+					</li>
+					<li>
+						<span>Соцсети, проекты, материалы</span>
+						<a href="https://6612.ru" target="_blank" rel="noopener">6612.ru</a>
+					</li>
+				</ul>
+			</section>
+		</main>
 	</body>
 </html>
 
+<style>
+	:root {
+		--bg: #0d0e12;
+		--bg-raised: #16181f;
+		--text: #eef0f3;
+		--text-dim: #a3a8b4;
+		--accent: #d7a34e;
+		--border: #262a35;
+	}
+
+	:global(html) {
+		box-sizing: border-box;
+	}
+	:global(*),
+	:global(*::before),
+	:global(*::after) {
+		box-sizing: inherit;
+	}
+
+	:global(html) {
+		overflow-x: hidden;
+	}
+
+	:global(body) {
+		margin: 0;
+		overflow-x: hidden;
+		background: var(--bg);
+		color: var(--text);
+		font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+			Helvetica, Arial, sans-serif;
+		line-height: 1.6;
+		-webkit-font-smoothing: antialiased;
+	}
+
+	main {
+		max-width: 42rem;
+		margin: 0 auto;
+		padding: 4rem 1.5rem 5rem;
+	}
+
+	section + section {
+		margin-top: 3.5rem;
+	}
+
+	h1 {
+		font-size: clamp(2.5rem, 8vw, 4rem);
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		margin: 0;
+	}
+
+	.tagline {
+		margin: 0.5rem 0 0;
+		font-size: clamp(1.1rem, 3vw, 1.4rem);
+		color: var(--accent);
+		font-weight: 500;
+	}
+
+	h2 {
+		font-size: clamp(1.3rem, 3.5vw, 1.6rem);
+		margin: 0 0 1rem;
+	}
+
+	.problem p {
+		color: var(--text-dim);
+		font-size: 1.1rem;
+	}
+
+	.positioning {
+		background: var(--bg-raised);
+		border-left: 3px solid var(--accent);
+		border-radius: 0.25rem;
+		padding: 1.5rem 1.75rem;
+	}
+
+	.positioning p {
+		font-size: 1.2rem;
+		margin: 0;
+	}
+
+	.positioning p + p {
+		margin-top: 1rem;
+		font-weight: 600;
+	}
+
+	.author {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1.75rem;
+		align-items: center;
+	}
+
+	.author-photo {
+		width: 8rem;
+		height: 8rem;
+		border-radius: 50%;
+		object-fit: cover;
+		flex-shrink: 0;
+	}
+
+	.author-info {
+		flex: 1 1 16rem;
+		min-width: 0;
+	}
+
+	.author-name {
+		margin: 0;
+		font-size: 1.2rem;
+		font-weight: 600;
+	}
+
+	.author-title {
+		margin: 0.15rem 0 0;
+		color: var(--text-dim);
+	}
+
+	blockquote {
+		margin: 1rem 0 0;
+		padding: 0;
+		font-style: italic;
+		color: var(--text);
+		border: none;
+	}
+
+	.contacts ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		border-top: 1px solid var(--border);
+	}
+
+	.contacts li {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: 0.25rem 1rem;
+		padding: 0.9rem 0;
+		border-bottom: 1px solid var(--border);
+	}
+
+	.contacts span {
+		color: var(--text-dim);
+	}
+
+	.contacts a,
+	.contacts li > :last-child {
+		overflow-wrap: anywhere;
+		text-align: right;
+		min-width: 0;
+	}
+
+	.contacts a {
+		color: var(--text);
+		text-decoration: none;
+		font-weight: 500;
+	}
+
+	.contacts a:hover {
+		color: var(--accent);
+	}
+
+	@media (max-width: 30rem) {
+		main {
+			padding-top: 3rem;
+		}
+	}
+</style>
