@@ -1,0 +1,22 @@
+---
+// import.meta.env.BASE_URL учитывает base из astro.config.mjs (разный для
+// GitHub Pages и для VPS/своего домена) — все ссылки на статику в public/
+// должны собираться через него, а не как абсолютные пути от корня.
+const base = import.meta.env.BASE_URL;
+---
+
+<html lang="ru">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+		<link rel="icon" href={`${base}favicon.ico`} />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Нейро-босс</title>
+	</head>
+	<body>
+		<h1>Нейро-босс</h1>
+		<p>Сайт в разработке — содержание ещё не определено (см. бриф в корне проекта).</p>
+	</body>
+</html>
+
