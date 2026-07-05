@@ -3,8 +3,15 @@ name: Deploy to sweb.ru (pinarik.ru/neuro-boss)
 # SpaceWeb (sweb.ru) не поддерживает SSH-ключи на обычном виртуальном
 # (shared) хостинге — только пароль от аккаунта (проверено эмпирически:
 # ключ в ~/.ssh/authorized_keys сервер не принимает, "publickey" отклоняется).
-# Поэтому здесь используется пароль через sshpass — компромисс, на который
-# осознанно согласился владелец проекта.
+# Поэтому здесь используется пароль — компромисс, на который осознанно
+# согласился владелец проекта.
+#
+# Второй эмпирический факт: сервер обрывает соединение на любой
+# неинтерактивной SSH-команде (exec-канал — тот же механизм, которым
+# пользуются rsync и scp), хотя интерактивный логин работает нормально.
+# Из-за этого rsync-over-ssh не работает ("bash: line 1: /: Is a directory",
+# rsync error code 126). SFTP (отдельный subsystem-канал SSH, не exec) при
+# этом доступен — поэтому деплой сделан через lftp по sftp://, а не rsync.
 #
 # TODO перед первым запуском (см. _private/HANDOFF.md): завести в
 # Settings → Secrets and variables → Actions:
@@ -32,13 +39,11 @@ jobs:
         run: npm run build
         env:
           DEPLOY_TARGET: sweb
-      - name: Install sshpass
-        run: sudo apt-get update && sudo apt-get install -y sshpass
+      - name: Install lftp
+        run: sudo apt-get update && sudo apt-get install -y lftp
       - name: Sanity-check remote path
-        # Защита от пустого/битого SWEB_REMOTE_PATH: без этой проверки rsync
-        # --delete ниже мог бы утечь до "/" на сервере (уже случалось —
-        # разъехалось на пустом секрете, deploy упал сам, но полагаться на
-        # везение не стоит).
+        # Защита от пустого/битого SWEB_REMOTE_PATH: mirror --delete ниже не
+        # должен получить пустой/корневой путь назначения.
         run: |
           if [ -z "$SWEB_REMOTE_PATH" ] || [ "$SWEB_REMOTE_PATH" = "/" ]; then
             echo "::error::SWEB_REMOTE_PATH пуст или равен '/' — деплой отменён, проверь секрет"
@@ -46,11 +51,13 @@ jobs:
           fi
         env:
           SWEB_REMOTE_PATH: ${{ secrets.SWEB_REMOTE_PATH }}
-      - name: Deploy via rsync over SSH (password auth)
+      - name: Deploy via SFTP (lftp mirror)
         run: |
-          sshpass -p "$SWEB_PASSWORD" rsync -avz --delete \
-            -e "ssh -p 22 -o StrictHostKeyChecking=no" \
-            dist/ "$SWEB_USER@$SWEB_HOST:$SWEB_REMOTE_PATH/"
+          lftp -u "$SWEB_USER,$SWEB_PASSWORD" -p 22 "sftp://$SWEB_HOST" -e "
+            set sftp:auto-confirm yes;
+            mirror -R --delete --verbose dist \"$SWEB_REMOTE_PATH\";
+            bye
+          "
         env:
           SWEB_HOST: ${{ secrets.SWEB_HOST }}
           SWEB_USER: ${{ secrets.SWEB_USER }}
