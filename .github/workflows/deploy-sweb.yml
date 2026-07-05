@@ -34,6 +34,18 @@ jobs:
           DEPLOY_TARGET: sweb
       - name: Install sshpass
         run: sudo apt-get update && sudo apt-get install -y sshpass
+      - name: Sanity-check remote path
+        # Защита от пустого/битого SWEB_REMOTE_PATH: без этой проверки rsync
+        # --delete ниже мог бы утечь до "/" на сервере (уже случалось —
+        # разъехалось на пустом секрете, deploy упал сам, но полагаться на
+        # везение не стоит).
+        run: |
+          if [ -z "$SWEB_REMOTE_PATH" ] || [ "$SWEB_REMOTE_PATH" = "/" ]; then
+            echo "::error::SWEB_REMOTE_PATH пуст или равен '/' — деплой отменён, проверь секрет"
+            exit 1
+          fi
+        env:
+          SWEB_REMOTE_PATH: ${{ secrets.SWEB_REMOTE_PATH }}
       - name: Deploy via rsync over SSH (password auth)
         run: |
           sshpass -p "$SWEB_PASSWORD" rsync -avz --delete \
