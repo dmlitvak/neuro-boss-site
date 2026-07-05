@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 # Деплой статической сборки сайта на VPS (тот же сервер, где живёт бот).
+# Домен neuro-boss.ru настраивается на этот VPS (корень домена, base "/").
 # Сборка ведётся с base "/" (обычный npm run build, без DEPLOY_TARGET) —
 # результат в dist/ не привязан к GitHub Pages и подходит для любого хостинга.
 #
 # TODO перед первым использованием:
-#   1. Завести на VPS отдельный server block в Nginx с document root ниже
-#      (см. VPS_PATH) — независимо от /home/agent/tg_agent, где живёт бот.
-#   2. Прописать VPS_HOST/VPS_PATH под реальный домен/поддомен.
+#   1. Завести на VPS отдельный server block в Nginx для neuro-boss.ru
+#      с document root ниже (см. VPS_PATH) — независимо от
+#      /home/agent/tg_agent, где живёт бот.
+#   2. Настроить TLS (certbot/Let's Encrypt) на neuro-boss.ru.
+#   3. Подтвердить VPS_PATH под реальный путь после настройки Nginx.
 set -euo pipefail
 
 VPS_HOST="agent@138.16.226.115"

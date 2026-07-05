@@ -1,0 +1,46 @@
+name: Deploy to sweb.ru (pinarik.ru/neuro-boss)
+
+# SpaceWeb (sweb.ru) не поддерживает SSH-ключи на обычном виртуальном
+# (shared) хостинге — только пароль от аккаунта (проверено эмпирически:
+# ключ в ~/.ssh/authorized_keys сервер не принимает, "publickey" отклоняется).
+# Поэтому здесь используется пароль через sshpass — компромисс, на который
+# осознанно согласился владелец проекта.
+#
+# TODO перед первым запуском (см. _private/HANDOFF.md): завести в
+# Settings → Secrets and variables → Actions:
+#   SWEB_HOST=77.222.40.197
+#   SWEB_USER=pminforu
+#   SWEB_PASSWORD=<пароль аккаунта>
+#   SWEB_REMOTE_PATH=/home/p/pminforu/pinarik_ru/public_html/neuro-boss
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm ci
+      - name: Build (base path для подпапки pinarik.ru/neuro-boss)
+        run: npm run build
+        env:
+          DEPLOY_TARGET: sweb
+      - name: Install sshpass
+        run: sudo apt-get update && sudo apt-get install -y sshpass
+      - name: Deploy via rsync over SSH (password auth)
+        run: |
+          sshpass -p "$SWEB_PASSWORD" rsync -avz --delete \
+            -e "ssh -p 22 -o StrictHostKeyChecking=no" \
+            dist/ "$SWEB_USER@$SWEB_HOST:$SWEB_REMOTE_PATH/"
+        env:
+          SWEB_HOST: ${{ secrets.SWEB_HOST }}
+          SWEB_USER: ${{ secrets.SWEB_USER }}
+          SWEB_PASSWORD: ${{ secrets.SWEB_PASSWORD }}
+          SWEB_REMOTE_PATH: ${{ secrets.SWEB_REMOTE_PATH }}

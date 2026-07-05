@@ -23,22 +23,30 @@
 | `npm run build`     | Сборка в `./dist/` (base `/`, для VPS)      |
 | `npm run preview`   | Локальный просмотр собранного сайта         |
 
-## Деплой — два независимых варианта
+## Деплой — три независимых варианта
 
 Исходники не привязаны к конкретному хостингу: `dist/` после сборки — чистая
 статика, переносится куда угодно без изменений.
 
-### 1. VPS (основной хостинг)
+### 1. VPS (основной хостинг, домен neuro-boss.ru)
 
 ```sh
 ./scripts/deploy-vps.sh
 ```
 
-Собирает с base `/` и заливает `dist/` по rsync на сервер. Требует
-предварительной настройки отдельного `server block` в Nginx (см. TODO в
-самом скрипте) — ещё не сделано, домен/поддомен не выбран.
+Собирает с base `/` и заливает `dist/` по rsync на сервер (тот же VPS, где
+живёт бот `tg_agent`). Требует предварительной настройки отдельного
+`server block` в Nginx под neuro-boss.ru (см. TODO в самом скрипте).
 
-### 2. GitHub Pages (тестовый деплой)
+### 2. sweb.ru (shared-хостинг, подпапка pinarik.ru/neuro-boss)
+
+Автоматически через `.github/workflows/deploy-sweb.yml` при пуше в `main`
+(сейчас выключен через `if: false` до настройки секретов — см. TODO в файле
+workflow). Собирается с `DEPLOY_TARGET=sweb`, base становится
+`/neuro-boss/`. Деплой — rsync по SSH на аккаунт sweb.ru, куда сайт кладётся
+в подпапку домена `pinarik.ru`.
+
+### 3. GitHub Pages (тестовый деплой)
 
 Автоматически через `.github/workflows/deploy-pages.yml` при пуше в `main`.
 Собирается с `DEPLOY_TARGET=gh-pages`, из-за чего base становится
@@ -48,11 +56,12 @@
 
 ## Важное про base path
 
-`astro.config.mjs` держит два варианта `base` (см. комментарий в файле) —
-`/` для VPS/своего домена и `/neuro-boss-site/` для GitHub Pages. Все ссылки
-на статику из `public/` должны собираться через `import.meta.env.BASE_URL`
-(см. `src/pages/index.astro`), а не как жёстко прописанный `/favicon.svg` —
-иначе на GitHub Pages будет 404.
+`astro.config.mjs` переключает `base` через `DEPLOY_TARGET` на три варианта
+(см. комментарий в файле): `/` для VPS/своего домена, `/neuro-boss/` для
+sweb.ru (подпапка pinarik.ru) и `/neuro-boss-site/` для GitHub Pages. Все
+ссылки на статику из `public/` должны собираться через
+`import.meta.env.BASE_URL` (см. `src/pages/index.astro`), а не как жёстко
+прописанный `/favicon.svg` — иначе на подпутевых деплоях будет 404.
 
 ## Содержание сайта
 
