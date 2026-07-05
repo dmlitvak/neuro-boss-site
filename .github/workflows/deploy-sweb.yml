@@ -54,14 +54,18 @@ jobs:
       - name: Deploy via SFTP (lftp mirror)
         # Скрипт-файл вместо inline -e "...": вложенные экранированные кавычки
         # в -e ломали парсинг lftp (висящая закрывающая кавычка после "bye"
-        # воспринималась как отдельная неизвестная команда).
+        # воспринималась как отдельная неизвестная команда). "open" — тоже
+        # внутри скрипта, а не на командной строке: -u/-p/site на командной
+        # строке конфликтуют с -f ("-c, -f, -v, -h conflict with other
+        # `open' options and arguments").
         run: |
           cat > /tmp/lftp-deploy.txt <<SCRIPT
+          open -u "$SWEB_USER,$SWEB_PASSWORD" -p 22 sftp://$SWEB_HOST
           set sftp:auto-confirm yes
           mirror -R --delete --verbose dist $SWEB_REMOTE_PATH
           bye
           SCRIPT
-          lftp -u "$SWEB_USER,$SWEB_PASSWORD" -p 22 -f /tmp/lftp-deploy.txt "sftp://$SWEB_HOST"
+          lftp -f /tmp/lftp-deploy.txt
         env:
           SWEB_HOST: ${{ secrets.SWEB_HOST }}
           SWEB_USER: ${{ secrets.SWEB_USER }}
